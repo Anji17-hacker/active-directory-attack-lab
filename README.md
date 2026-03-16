@@ -1,17 +1,23 @@
 # Active Directory Attack Lab (Kerberos Exploitation)
 
-This project demonstrates a complete **Active Directory attack chain** performed in a controlled lab environment.
-The objective of this lab was to enumerate an Active Directory domain, obtain valid credentials, escalate privileges, and gain administrator access to the domain controller.
-
 ## Lab Information
 
-Platform: TryHackMe  
-Room: Attacktive Directory  
-Focus: Active Directory Exploitation  
+Platform: TryHackMe
+Room: Attacktive Directory
+Focus: Active Directory Exploitation
 Difficulty: Intermediate
+
 ---
 
-# Tools Used
+## Lab Overview
+
+This project demonstrates a complete **Active Directory attack chain** performed in a controlled lab environment.
+
+The objective of this lab was to enumerate an Active Directory domain, identify valid user accounts, exploit Kerberos authentication weaknesses, retrieve credentials, escalate privileges, and gain administrator access to the domain controller.
+
+---
+
+## Tools Used
 
 * Nmap
 * Kerbrute
@@ -22,34 +28,35 @@ Difficulty: Intermediate
 
 ---
 
-
 ## Attack Flow
 
+```text
 Nmap Scan
-↓
+   ↓
 Kerberos User Enumeration (Kerbrute)
-↓
+   ↓
 AS-REP Roasting
-↓
+   ↓
 Password Cracking
-↓
+   ↓
 SMB Share Enumeration
-↓
+   ↓
 Credential Discovery
-↓
+   ↓
 NTDS Dump
-↓
+   ↓
 Pass-the-Hash
-↓
+   ↓
 Domain Administrator Access
+```
 
+---
 
+## Attack Methodology
 
-# Attack Methodology
+### 1. Network Enumeration
 
-## 1. Network Enumeration
-
-The first step was identifying open ports and services running on the target machine.
+The first step involved identifying open ports and services running on the target machine.
 This helps determine if the system is part of an Active Directory domain.
 
 Nmap was used for service discovery.
@@ -64,11 +71,11 @@ Important services discovered:
 * SMB (445)
 * LDAP (389)
 
-These services strongly indicate the presence of an **Active Directory Domain Controller**.
+These services strongly indicated the presence of an **Active Directory Domain Controller**.
 
 ---
 
-## 2. Kerberos User Enumeration
+### 2. Kerberos User Enumeration
 
 Since Kerberos authentication was running on the server, usernames in the domain could be enumerated.
 
@@ -86,7 +93,7 @@ This revealed several valid users in the domain including:
 
 ---
 
-## 3. AS-REP Roasting
+### 3. AS-REP Roasting
 
 Some Active Directory accounts may have **Kerberos pre-authentication disabled**.
 
@@ -100,7 +107,7 @@ This retrieves **AS-REP hashes**, which can be cracked offline.
 
 ---
 
-## 4. Password Cracking
+### 4. Password Cracking
 
 The retrieved Kerberos hashes were cracked using **Hashcat** with the rockyou wordlist.
 
@@ -114,7 +121,7 @@ svc-admin
 
 ---
 
-## 5. SMB Share Enumeration
+### 5. SMB Share Enumeration
 
 With valid credentials obtained, SMB shares on the domain controller were enumerated.
 
@@ -128,7 +135,7 @@ backup
 
 ---
 
-## 6. Accessing the Backup Share
+### 6. Accessing the Backup Share
 
 The backup share was accessed using smbclient.
 
@@ -140,7 +147,7 @@ Inside the share, a file named **backup_credentials.txt** was discovered.
 
 ---
 
-## 7. Decoding the Credentials
+### 7. Decoding the Credentials
 
 The credentials inside the file were encoded using Base64.
 
@@ -155,10 +162,10 @@ After decoding, the credentials revealed access to the account:
 
 ---
 
-## 8. Dumping Domain Password Hashes
+### 8. Dumping Domain Password Hashes
 
 The backup account had replication privileges within the domain.
-This allowed the extraction of password hashes from the domain controller.
+This allowed extraction of password hashes from the domain controller.
 
 Using Impacket's **secretsdump.py**, NTDS password hashes were dumped.
 
@@ -170,13 +177,11 @@ This command extracted NTLM hashes for all domain users including the **Administ
 
 ---
 
-## 9. Pass-the-Hash Attack
+### 9. Pass-the-Hash Attack
 
-Instead of cracking the Administrator password, authentication can be performed directly using the NTLM hash.
+Instead of cracking the Administrator password, authentication was performed directly using the NTLM hash.
 
 This technique is known as **Pass-the-Hash**.
-
-Using Evil-WinRM:
 
 ```bash
 evil-winrm -i TARGET_IP -u Administrator -H NTLM_HASH
@@ -186,7 +191,7 @@ This successfully provided **Administrator access** to the domain controller.
 
 ---
 
-## 10. Retrieving the Administrator Flag
+### 10. Retrieving the Administrator Flag
 
 Once administrator access was obtained, the root flag was located on the Administrator desktop.
 
@@ -195,11 +200,11 @@ cd C:\Users\Administrator\Desktop
 type root.txt
 ```
 
-Root flag was successfully retrieved.
+The root flag was successfully retrieved.
 
 ---
 
-# Skills Demonstrated
+## Skills Demonstrated
 
 * Active Directory Enumeration
 * Kerberos Exploitation
@@ -214,15 +219,17 @@ Root flag was successfully retrieved.
 
 ## What I Learned
 
-- Active Directory enumeration techniques
-- Kerberos authentication weaknesses
-- AS-REP roasting attacks
-- SMB share exploitation
-- NTDS password hash extraction
-- Pass-the-Hash authentication
-- 
+* Active Directory enumeration techniques
+* Kerberos authentication weaknesses
+* AS-REP roasting attacks
+* SMB share exploitation
+* NTDS password hash extraction
+* Pass-the-Hash authentication
 
-# Key Takeaway
+---
+
+## Key Takeaway
 
 Misconfigured Kerberos authentication and excessive replication privileges can lead to complete **Active Directory domain compromise**.
+
 Understanding these attack paths is critical for both **penetration testers and defensive security teams**.
