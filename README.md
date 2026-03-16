@@ -3,8 +3,12 @@
 This project demonstrates a complete **Active Directory attack chain** performed in a controlled lab environment.
 The objective of this lab was to enumerate an Active Directory domain, obtain valid credentials, escalate privileges, and gain administrator access to the domain controller.
 
-Platform used: **TryHackMe**
+## Lab Information
 
+Platform: TryHackMe  
+Room: Attacktive Directory  
+Focus: Active Directory Exploitation  
+Difficulty: Intermediate
 ---
 
 # Tools Used
@@ -17,6 +21,29 @@ Platform used: **TryHackMe**
 * Evil-WinRM
 
 ---
+
+
+## Attack Flow
+
+Nmap Scan
+↓
+Kerberos User Enumeration (Kerbrute)
+↓
+AS-REP Roasting
+↓
+Password Cracking
+↓
+SMB Share Enumeration
+↓
+Credential Discovery
+↓
+NTDS Dump
+↓
+Pass-the-Hash
+↓
+Domain Administrator Access
+
+
 
 # Attack Methodology
 
@@ -184,6 +211,16 @@ Root flag was successfully retrieved.
 * Domain Privilege Escalation
 
 ---
+
+## What I Learned
+
+- Active Directory enumeration techniques
+- Kerberos authentication weaknesses
+- AS-REP roasting attacks
+- SMB share exploitation
+- NTDS password hash extraction
+- Pass-the-Hash authentication
+- 
 
 # Key Takeaway
 
